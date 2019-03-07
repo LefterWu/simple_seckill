@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.seckill.dao.SeckillDao">
+
+    <resultMap id="secKillMap" type="Seckill">
+        <id column="seckill_id" property="seckillId"/>
+        <result column="name" property="name"/>
+        <result column="number" property="number"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        seckill_id, name, number, start_time, end_time, create_time
+    </sql>
+
+    <update id="reduceNumber" parameterType="map">
+        update
+          seckill
+        set
+          number = number - 1
+        where seckill_id = #{seckillId}
+        and start_time &lt;= #{killTime}
+        and end_time >= #{killTime}
+        and number > 0;
+    </update>
+
+    <select id="queryById" resultType="Seckill" parameterType="long">
+        select
+        <include refid="Base_Column_List"/>
+        from seckill
+        where seckill_id = #{seckillId}
+    </select>
+
+    <select id="queryByOffsetLimit" resultType="Seckill">
+        select
+        <include refid="Base_Column_List"/>
+        from seckill
+        order by create_time desc
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--查询所有-->
+    <select id="queryByAll" resultMap="secKillMap">
+        select
+        <include refid="Base_Column_List"/>
+        from seckill
+        order by create_time desc
+    </select>
+
+    <!-- mybatis调用存储过程 -->
+    <select id="killByProcedure" statementType="CALLABLE">
+        call execute_seckill(
+            #{seckillId,jdbcType=BIGINT,mode=IN},
+            #{phone,jdbcType=BIGINT,mode=IN},
+            #{killTime,jdbcType=TIMESTAMP,mode=IN},
+            #{result,jdbcType=INTEGER,mode=OUT}
+        )
+    </select>
+
+</mapper>

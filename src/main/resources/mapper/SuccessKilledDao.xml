@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.seckill.dao.SuccessKilledDao">
+
+    <!--秒杀成功类映射-->
+    <resultMap id="successKilledMap" type="SuccessKilled">
+        <id column="seckill_id" property="seckillId"/>
+        <result column="user_phone" property="userPhone"/>
+        <result column="state" property="state"/>
+        <result column="create_time" property="createTime"/>
+        <!--多对一-->
+        <association property="seckill" javaType="Seckill" resultMap="secKillMap"/>
+    </resultMap>
+
+    <!--秒杀类映射-->
+    <resultMap id="secKillMap" type="Seckill">
+        <id column="seckill_id" property="seckillId"/>
+        <result column="name" property="name"/>
+        <result column="number" property="number"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <insert id="insertSuccessKilled">
+        <!-- 主键冲突,报错 -->
+        insert ignore into success_killed(seckill_id,user_phone,state)
+        values (#{seckillId}, #{userPhone}, 0)
+    </insert>
+
+    <!-- 根据id查询SuccessKilled并携带Seckill实体 -->
+    <select id="queryByIdWithSeckill" resultMap="successKilledMap">
+        select
+          sk.seckill_id,
+          sk.user_phone,
+          sk.state,
+          sk.create_time,
+          s.seckill_id,
+          s.name ,
+          s.number ,
+          s.start_time,
+          s.end_time,
+          s.create_time
+        from success_killed sk
+        join seckill s on sk.seckill_id = s.seckill_id
+        where sk.seckill_id=#{seckillId} and sk.user_phone=#{userPhone}
+    </select>
+
+</mapper>
